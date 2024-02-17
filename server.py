@@ -52,6 +52,32 @@ def login():
             return jsonify({'success': False, 'message': 'Invalid email or password'})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)})
+    
+    
+tests = [
+    {"name": "Test 1", "time": "10:00 AM", "date": "2024-02-16"},
+    {"name": "Test 2", "time": "11:30 AM", "date": "2024-02-17"},
+    {"name": "Test 3", "time": "02:00 PM", "date": "2024-02-18"},
+]
+@app.route("/tests")
+def get_tests():
+    return jsonify(tests)
+
+
+# Dummy data for questions
+questions_data = {
+    "Test 1": ["What is your name?", "What is your age?", "Where are you from?"],
+    "Test 2": ["What is 2 + 2?", "What is the capital of France?", "Who wrote Romeo and Juliet?"],
+    "Test 3": ["What is the chemical symbol for water?", "Who painted the Mona Lisa?", "What is the tallest mountain in the world?"],
+}
+
+@app.route("/questions")
+def get_questions():
+    test_name = request.args.get("test_name")
+    if test_name not in questions_data:
+        return jsonify({"error": "Test not found"}), 404
+    return jsonify(questions_data[test_name])
+
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
