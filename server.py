@@ -18,6 +18,7 @@ password = urllib.parse.quote_plus("J@ssu007")
 client = MongoClient("mongodb+srv://%s:%s@cluster0.r3jv8jx.mongodb.net/?retryWrites=true&w=majority"%(username,password))
 db = client['learnsync']
 users_collection = db['users']
+question_collection=db['questions']
 try:
     client.admin.command('ping')
     print("Pinged your deployment. You successfully connected to MongoDB!")
@@ -55,9 +56,9 @@ def login():
     
     
 tests = [
-    {"name": "Test 1", "time": "10:00 AM", "date": "2024-02-16"},
-    {"name": "Test 2", "time": "11:30 AM", "date": "2024-02-17"},
-    {"name": "Test 3", "time": "02:00 PM", "date": "2024-02-18"},
+    {"name": "maths", "time": "10:00 AM", "date": "2024-02-16"},
+    {"name": "BTC", "time": "11:30 AM", "date": "2024-02-17"},
+    {"name": "AML", "time": "02:00 PM", "date": "2024-02-18"},
 ]
 @app.route("/tests")
 def get_tests():
@@ -74,23 +75,44 @@ questions_data = {
 @app.route("/questions")
 def get_questions():
     test_name = request.args.get("test_name")
-    if test_name not in questions_data:
-        return jsonify({"error": "Test not found"}), 404
-    return jsonify(questions_data[test_name])
+    if not test_name:
+        return jsonify({"error": "Test name is required"}), 400
+
+    # Query MongoDB for questions data based on the test name
+    questions_data = list(question_collection.find({"subname": test_name}).limit(5))
+
+    # Extract only the question strings from the documents
+    questions = [question["question"] for question in questions_data]
+
+    return jsonify(questions)
 
 
 @app.route('/submit-answers', methods=['POST'])
 def submit_answers():
     # Get the JSON data from the request
     res = request.get_json()
-    data =res['answers']
-    print(data)
+    submitted_answers = res['answers']
+    subject_name = res['testName']
+
+    # Query MongoDB for the correct answers based on the subject name
+    correct_answers_data = list(question_collection.find({"subname": subject_name}).limit(len(submitted_answers)))
+
+    # Extract the correct answers
+    correct_answers = [question["answer"] for question in correct_answers_data]
+    print(correct_answers)
+
+    # Evaluate the score
+    score = sum(1 for submitted, correct in zip(submitted_answers, correct_answers) if submitted == correct)
+
     print("Received answers:")
-    for index, answer in enumerate(data):
+    for index, answer in enumerate(submitted_answers):
         print(f"Question {index + 1}: {answer}")
-    
-    # Return a success message
-    return jsonify({"success": True})
+
+    print(f"Score: {score} / {len(correct_answers)}")
+
+    # Return the score
+    return jsonify({"success": True, "score": score, "total_questions": len(correct_answers)})
+
 
 if __name__ == '__main__':
     app.run(debug=True)
