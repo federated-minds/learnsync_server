@@ -79,5 +79,18 @@ def get_questions():
     return jsonify(questions_data[test_name])
 
 
+@app.route('/submit-answers', methods=['POST'])
+def submit_answers():
+    # Get the JSON data from the request
+    res = request.get_json()
+    data =res['answers']
+    print(data)
+    print("Received answers:")
+    for index, answer in enumerate(data):
+        print(f"Question {index + 1}: {answer}")
+    
+    # Return a success message
+    return jsonify({"success": True})
+
 if __name__ == '__main__':
     app.run(debug=True)
