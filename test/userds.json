@@ -1,0 +1,28 @@
+{ "__id__":"ksj54544555sr65v4445858dsv",
+    "userid":"jaswanth",
+    "email":"sfv@jhsksbjn.com",
+    "password":"ksjbvk",
+    "opted_courses":[
+                        {
+                            "course_name":"maths",
+                            "timespent":"65",
+                            "quizzattempts":"5",
+                            "quizzscore":"100",
+                            "perceentile":"65",
+                            "predicted":"1",
+                            "relative_performance":"2"
+                        },
+                        {
+                          "course_name": "DSA",
+                          "timespent": "65",
+                          "quizzattempts": "5",
+                          "quizzscore": "100",
+                          "perceentile": "65",
+                          "predicted": "1",
+                          "relative_performance": "2"
+                        }
+                    ]
+
+
+
+}

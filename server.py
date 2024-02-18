@@ -41,6 +41,8 @@ def signup():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)})
 
+jhbv 
+
 @app.route('/api/login', methods=['POST'])
 def login():
     try:
@@ -115,4 +117,4 @@ def submit_answers():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
