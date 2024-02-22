@@ -5,7 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from pymongo import MongoClient
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app)  
 
 # Connect to MongoDB
 import urllib
@@ -41,7 +41,6 @@ def signup():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)})
 
-jhbv 
 
 @app.route('/api/login', methods=['POST'])
 def login():
@@ -67,12 +66,6 @@ def get_tests():
     return jsonify(tests)
 
 
-# Dummy data for questions
-questions_data = {
-    "Test 1": ["What is your name?", "What is your age?", "Where are you from?"],
-    "Test 2": ["What is 2 + 2?", "What is the capital of France?", "Who wrote Romeo and Juliet?"],
-    "Test 3": ["What is the chemical symbol for water?", "Who painted the Mona Lisa?", "What is the tallest mountain in the world?"],
-}
 
 @app.route("/questions")
 def get_questions():
@@ -91,15 +84,12 @@ def get_questions():
 
 @app.route('/submit-answers', methods=['POST'])
 def submit_answers():
-    # Get the JSON data from the request
     res = request.get_json()
     submitted_answers = res['answers']
     subject_name = res['testName']
 
     # Query MongoDB for the correct answers based on the subject name
     correct_answers_data = list(question_collection.find({"subname": subject_name}).limit(len(submitted_answers)))
-
-    # Extract the correct answers
     correct_answers = [question["answer"] for question in correct_answers_data]
     print(correct_answers)
 
@@ -112,9 +102,24 @@ def submit_answers():
 
     print(f"Score: {score} / {len(correct_answers)}")
 
-    # Return the score
     return jsonify({"success": True, "score": score, "total_questions": len(correct_answers)})
 
 
+@app.route('/api/account_details', methods=['POST'])
+def account_details():
+    email = request.json.get('email')
+    print(email)
+    userdata = get_username_by_email(email)
+    return jsonify({'name': userdata[0],'email':userdata[1]})
+
+def get_username_by_email(email):
+    user_data = users_collection.find_one({'email': email})
+    print(user_data)
+
+    if user_data:
+        return [user_data.get('name'),user_data.get("email")]
+    else:
+        return None
+
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
