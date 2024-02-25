@@ -5,15 +5,22 @@ from scipy.stats import percentileofscore
 
 app = Flask(__name__)
 
-client = MongoClient('mongodb://localhost:27017/')
-db = client['your_database']
-collection = db['your_collection']
+import urllib
+username = urllib.parse.quote_plus("shreyas")
+password = urllib.parse.quote_plus("shreyas")
+
+# Create a new client and connect to the server
+client = MongoClient("mongodb+srv://%s:%s@cluster0.r3jv8jx.mongodb.net/?retryWrites=true&w=majority"%(username,password))
+db = client['learnsync']
+users_collection = db['users']
+question_collection=db['questions']
+courses_collection = db['courses']
 
 @app.route('/aggregate_performance', methods=['GET'])
 def aggregate_performance():
     try:
         # Retrieve all documents from the collection
-        cursor = collection.find({})
+        cursor = courses_collection.find({})
         performances = [doc['performance'] for doc in cursor]
 
         # Calculate aggregate performance
