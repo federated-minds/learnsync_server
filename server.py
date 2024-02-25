@@ -19,6 +19,8 @@ client = MongoClient("mongodb+srv://%s:%s@cluster0.r3jv8jx.mongodb.net/?retryWri
 db = client['learnsync']
 users_collection = db['users']
 question_collection=db['questions']
+courses_collection = db['courses']
+
 try:
     client.admin.command('ping')
     print("Pinged your deployment. You successfully connected to MongoDB!")
@@ -103,6 +105,32 @@ def submit_answers():
     print(f"Score: {score} / {len(correct_answers)}")
 
     return jsonify({"success": True, "score": score, "total_questions": len(correct_answers)})
+
+
+@app.route('/courses', methods=['GET'])
+def get_opted_courses():
+    username = request.args.get('username')
+    if not username:
+        return jsonify({'error': 'Username parameter is missing'}), 400
+    
+    user = users_collection.find_one({'email': username})
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    
+    opted_courses = user.get('opted_courses', [])
+    print(opted_courses)
+    return jsonify({'opted_courses': opted_courses})
+
+@app.route('/playlist_id', methods=['GET'])
+def get_playlist_id():
+    course_name = request.args.get('courseName')
+    course = courses_collection.find_one({'course': "physics"}) #change once playlist ids are added to mongo db
+    
+    if course:
+        print(course['playlist_id'])
+        return jsonify({'playlist_id': course['playlist_id']})
+    else:
+        return jsonify({'error': 'Course not found'}), 404
 
 
 @app.route('/api/account_details', methods=['POST'])
