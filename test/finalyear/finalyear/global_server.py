@@ -2,8 +2,10 @@ from flask import Flask, jsonify,request
 from pymongo import MongoClient
 import numpy as np
 from scipy.stats import percentileofscore
+from flask import session
 
-app = Flask(__name__)
+
+app= Flask(__name__)
 
 import urllib
 username = urllib.parse.quote_plus("shreyas")
@@ -19,9 +21,17 @@ courses_collection = db['courses']
 @app.route('/aggregate_performance', methods=['GET'])
 def aggregate_performance():
     try:
+        course_name='dsa'
+        user_ID=9
+        print(user_ID,course_name)
+
         # Retrieve all documents from the collection
         cursor = courses_collection.find({})
-        performances = [doc['performance'] for doc in cursor]
+        performances = [doc['performance'] for doc in cursor if doc['course']==course_name]
+        print(performances[0])
+
+        for user in performances:
+            sum=sum+user['marks']
 
         # Calculate aggregate performance
         total = len(performances)
@@ -123,4 +133,6 @@ def classify_performance(performance):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True,port=5001)
+
+

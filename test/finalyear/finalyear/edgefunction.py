@@ -28,6 +28,7 @@ from flask import Flask, session, render_template
 def index():
     # Set a value in the session
     session['user_ID'] = 9
+    session['course_Name']='dsa'
     return "hello"
 
 
