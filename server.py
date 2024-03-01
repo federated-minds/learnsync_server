@@ -51,7 +51,7 @@ def login():
         print(data)
         user = users_collection.find_one({'email': data['email']})
         if user and (user['password']==data['password']):
-            localStorage.setItem('user_ID', user);
+            # localStorage.setItem('user_ID', user);
             return jsonify({'success': True})
         else:
             return jsonify({'success': False, 'message': 'Invalid email or password'})
@@ -151,4 +151,4 @@ def get_username_by_email(email):
         return None
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
