@@ -14,8 +14,8 @@ CORS(app)
 
 # Connect to MongoDB
 import urllib
-username = urllib.parse.quote_plus("sandeep")
-password = urllib.parse.quote_plus("sandeep")
+username = urllib.parse.quote_plus("shreyas")
+password = urllib.parse.quote_plus("shreyas")
 
 
 
