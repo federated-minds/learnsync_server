@@ -38,7 +38,7 @@ from flask import Flask, session, render_template
 @app.route('/')
 def index():
     # Set a value in the session
-    session['user_ID'] = 9
+    session['user_ID'] = "65e2c5865f0817735e25d6b2"
     session['course_Name']='dsa'
     return "hello"
 
@@ -120,7 +120,7 @@ def predict():
             input_final_scaled = scaler.transform(input_final.reshape(1, -1))
             prediction = model.predict(input_final_scaled)[0]
             # Ensure non-negative prediction
-            user_id_to_update = user_id
+            user_id_to_update = session.get('user_ID', 'Guest')
             # Update the document in the MongoDB collection
             if prediction<=0.5:
                 prediction=0
