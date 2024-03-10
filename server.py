@@ -1,21 +1,27 @@
-
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 from pymongo import MongoClient
-
+import certifi
+import numpy as np
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
+from bson import ObjectId
+ca = certifi.where()
 app = Flask(__name__)
 CORS(app)  
 
 # Connect to MongoDB
 import urllib
-username = urllib.parse.quote_plus("jaswanth")
-password = urllib.parse.quote_plus("J@ssu007")
+username = urllib.parse.quote_plus("shreyas")
+password = urllib.parse.quote_plus("shreyas")
 
 
 
 # Create a new client and connect to the server
-client = MongoClient("mongodb+srv://%s:%s@cluster0.r3jv8jx.mongodb.net/?retryWrites=true&w=majority"%(username,password))
+client = MongoClient("mongodb+srv://%s:%s@cluster0.r3jv8jx.mongodb.net/?retryWrites=true&w=majority" % (username, password),
+                      tlsCAFile=ca)
 db = client['learnsync']
 users_collection = db['users']
 question_collection=db['questions']
@@ -27,6 +33,7 @@ try:
     print("Pinged your deployment. You successfully connected to MongoDB!")
 except Exception as e:
     print(e)
+
 @app.route('/api/signup', methods=['POST'])
 def signup():
     try:

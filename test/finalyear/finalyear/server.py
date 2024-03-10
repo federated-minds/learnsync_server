@@ -90,5 +90,5 @@ def aggregate_predictions():
 
         return jsonify({'aggregated_predictions': aggregated_predictions.tolist()}), 200
 
-if __name__ == '_main_':
-    app.run(debug=True)  # Run Flask app in debug mode
+if __name__ == '__main__':
+    app.run(debug=True,port=5005)  # Run Flask app in debug mode
