@@ -20,6 +20,7 @@ db = client['learnsync']
 users_collection = db['users']
 question_collection=db['questions']
 courses_collection = db['courses']
+dataset_users_collection = db['Dataset_users']
 
 try:
     client.admin.command('ping')
@@ -30,16 +31,41 @@ except Exception as e:
 def signup():
     try:
         data = request.json
+        print(data)
         hashed_password = generate_password_hash(data['password'])
-        user = {
-            'name': data['name'],
-            'email': data['email'],
-            'password': data['password']
-            # 'password':hashed_password
+        if(data['name']!=''):
+            user = {
+                'name': data['name'],
+                'email': data['email'],
+                'password': data['password']
+                # 'password':hashed_password
+            }
+            id =users_collection.insert_one(user)
+            print(id)
+            return jsonify({'success': True})
+        else:
+            return jsonify({'success': False, 'message': "No Details entered"})
+
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+    
+@app.route('/api/gatherinfo', methods=['POST'])
+def gatherinfo():
+    try:
+        data = request.json
+        print(data)
+        if 'username' not in data:
+            return jsonify({'success': False, 'message': "Username not provided"})
+        user = users_collection.find_one({'email': data['username']})
+        update_data = {
+            'college': data.get('college', ''),
+            'semester': data.get('semester', ''),
+            'branch': data.get('branch', ''),
+            'opted_courses': data.get('optedCourses', [])
         }
-        id =users_collection.insert_one(user)
-        print(id)
+        users_collection.update_one({'email': data['username']}, {'$set': update_data})
         return jsonify({'success': True})
+
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)})
 
@@ -119,8 +145,31 @@ def get_opted_courses():
         return jsonify({'error': 'User not found'}), 404
     
     opted_courses = user.get('opted_courses', [])
+    user_id=user.get('_id')
     print(opted_courses)
-    return jsonify({'opted_courses': opted_courses})
+    total_recommendations = []
+    
+    for course_name in opted_courses:
+        course_doc = courses_collection.find_one({'course': course_name})
+        if course_doc:
+            all_performances = course_doc.get('performance',[])
+            # print(all_performances)
+            specific_performance = next((p for p in all_performances if p['user_id'] == user_id), None)
+            print(specific_performance)
+            if(specific_performance):
+                recommendations = specific_performance['recommendations']
+                for each in recommendations:
+                    total_recommendations.append(each)
+    # print(total_recommendations)
+    top_courses_cursor = courses_collection.find().sort("opted_count", -1).limit(3)
+    
+    # Convert cursor object to a list of dictionaries
+    top_courses = list(top_courses_cursor)
+    
+    top_course_names = [course['course'] for course in top_courses]
+    print(top_course_names)
+
+    return jsonify({'opted_courses': opted_courses,'total_recommendations': total_recommendations,'popular_courses':top_course_names})
 
 @app.route('/playlist_id', methods=['GET'])
 def get_playlist_id():
