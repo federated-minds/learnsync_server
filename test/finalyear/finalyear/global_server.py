@@ -90,108 +90,105 @@ courses_collection = db['courses']
 dataset_users = db['Dataset_users']
 
 
-@app.route('/aggregate_performance', methods=['GET'])
+@app.route('/aggregate_performance', methods=['POST'])
 def aggregate_performance():
-    try:
-        coursename = "dsa"
-        course_id = "1"
-        user_id = ObjectId("65e2c5865f0817735e25d6b2")
-        performance_scores = {0: 0.2, 1: 0.5, 2: 0.8}
+    input= request.json
+    coursename = input["course_name"]
+    course_id = input["course_id"]
+    user_id = ObjectId(input["user_id"])
+    performance_scores = {0: 0.2, 1: 0.5, 2: 0.8}
+    print(input)
 
-        # Retrieve all documents from the collection
-        result = courses_collection.find({"course": "dsa"})
-        print(result)
-        for entry in result:
-            performance_data = entry.get("performance")
+    # Retrieve all documents from the collection
+    result = courses_collection.find_one({"course":coursename})
+    # for entry in result:
+    performance_data = result["performance"]
 
-        student_marks = np.array([entry["marks"] for entry in performance_data])
-        local_predictions = np.array([performance_scores[entry["performance"]] for entry in performance_data])
+    student_marks = np.array([entry["score"] for entry in performance_data])
+    local_predictions = np.array([performance_scores[entry["performance"]] for entry in performance_data])
 
-        weights = student_marks / np.sum(student_marks)
-        aggregated_prediction = np.sum(local_predictions * weights)
-        print("Aggregated Prediction:", aggregated_prediction)
+    weights = student_marks / np.sum(student_marks)
+    aggregated_prediction = np.sum(local_predictions * weights)
+    print("Aggregated Prediction:", aggregated_prediction)
 
-        if aggregated_prediction < 0.33:
-            new_performance = "0"
-        elif aggregated_prediction < 0.67:
-            new_performance = "1"
-        else:
-            new_performance = "2"
+    if aggregated_prediction < 0.33:
+        new_performance = "0"
+    elif aggregated_prediction < 0.67:
+        new_performance = "1"
+    else:
+        new_performance = "2"
+    # Find the document with the specified user_id
+    user_document = dataset_users.find_one({"user_id": user_id})
+    print(new_performance)
+    # Check if the user document is found
+    if user_document:
+        print("HI")
+        # Update the performance value in the datasets array
+        # for dataset in user_document['datasets']:
+            # if dataset.get('course_id') == course_id:
+        new_row = {
+            "course_id": str(course_id),
+            "time_spent": input["timespent"],
+            "quiz_scores": input["quizscore"],
+            "quiz_attempts": input["quizzattempts"],
+            "performance": new_performance
+        }
+        print(new_row)
+        result = dataset_users.update_one(
+            {"user_id": user_id},
+            {"$push": {"datasets": new_row}}
+        )
+        get_recommendations(input)
+        return jsonify({"Success": "True, updated"})
 
-        user_id = user_id
+    return jsonify({"error": "User not found or row not updated."})
 
-        # Find the document with the specified user_id
+
+
+# @app.route('/recommendations', methods=['GET'])
+def get_recommendations(input):
+
+    course_name = input["course_name"]
+    course_id = input["course_id"]
+    user_id = ObjectId(input["user_id"])
+    course = courses_collection.find_one({'course': course_name})
+
+    course_performance = course.get('performance', [])
+
+    # extraction from Dataset_users
+    def rec(course_id, user_id):
         user_document = dataset_users.find_one({"user_id": user_id})
-
-        # Check if the user document is found
         if user_document:
-            print("HI")
-            # Update the performance value in the datasets array
-            for dataset in user_document['datasets']:
-                if dataset.get('course_id') == course_id:
-                    new_row = {
-                        "course_id": course_id,
-                        "time_spent": dataset.get("time_spent"),
-                        "quiz_scores": dataset.get("quiz_scores"),
-                        "quiz_attempts": dataset.get("quiz_attempts"),
-                        "performance": new_performance
-                    }
-                    result = dataset_users.update_one(
-                        {"user_id": user_id},
-                        {"$push": {"datasets": new_row}}
-                    )
-                    return jsonify({"Success": "True, updated"})
+            # Access the datasets array within the document
+            datasets = user_document.get("datasets", [])
+            # Iterate through datasets to find the performance for the specified course_id
+            for dataset in datasets[::-1]:
+                if dataset.get("course_id") == str(course_id):
+                    performance_value = dataset.get("performance")
+                    print(f"Performance for course_id {course_id}: {performance_value}")
+                    print(type(course_id))
+                    print(type(performance_value))
+                    return subject_recommendations[str(course_id)][str(performance_value)]
+                else:
+                    print(f"No dataset found for course_id {course_id} in user document.")
+        else:
+            print(f"No document found for user_id {user_id} in the dataset_users collection.")
 
-        return jsonify({"error": "User not found or row not updated."})
+    for user in course_performance:
+        if user.get("user_id") == user_id:
+            recommendations = rec(course_id, user_id)
+            print(recommendations)
+            # Update the document in the collection
+            courses_collection.update_one(
+                {"course": course_name, "performance.user_id": user_id},
+                {"$set": {"performance.$[].recommendations": recommendations}}
+            )
 
-    except Exception as e:
-        return jsonify({'error': str(e)}), 400
+            return {"success": "Recommended successfully"}
 
-
-@app.route('/recommendations', methods=['GET'])
-def get_recommendations():
-    try:
-        course_id = "1"
-        course_name = "dsa"
-        user_id = ObjectId("65e2c5865f0817735e25d6b2")
-        course = courses_collection.find_one({'course': course_name})
-
-        course_performance = course.get('performance', [])
-
-        # extraction from Dataset_users
-        def rec(course_id, user_id):
-            user_document = dataset_users.find_one({"user_id": user_id})
-            if user_document:
-                # Access the datasets array within the document
-                datasets = user_document.get("datasets", [])
-                # Iterate through datasets to find the performance for the specified course_id
-                for dataset in datasets:
-                    if dataset.get("course_id") == course_id:
-                        performance_value = dataset.get("performance")
-                        print(f"Performance for course_id {course_id}: {performance_value}")
-                        return subject_recommendations[course_id][performance_value]
-                    else:
-                        print(f"No dataset found for course_id {course_id} in user document.")
-            else:
-                print(f"No document found for user_id {user_id} in the dataset_users collection.")
-
-        for user in course_performance:
-            if user.get("user_id") == user_id:
-                recommendations = rec(course_id, user_id)
-                print(recommendations)
-                # Update the document in the collection
-                courses_collection.update_one(
-                    {"course": course_name, "performance.user_id": user_id},
-                    {"$set": {"performance.$.recommendations": recommendations}}
-                )
-
-                return {"success": "Recommended successfully"}
-
-    except Exception as e:
-        return jsonify({'error': str(e)}), 400
-
+  
 
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5003)
+    app.run(port=3001)

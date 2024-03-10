@@ -8,6 +8,8 @@ from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 from bson import ObjectId
+import requests
+import json
 ca = certifi.where()
 app = Flask(__name__)
 CORS(app)  
@@ -117,26 +119,67 @@ def get_questions():
 
     return jsonify(questions)
 
-
+courseids={
+    "maths":7
+}
 @app.route('/submit-answers', methods=['POST'])
 def submit_answers():
+    url = 'http://localhost:3000/predict'
+
     res = request.get_json()
     submitted_answers = res['answers']
     subject_name = res['testName']
+    useremail = res['username']
+    user_doc= users_collection.find_one({"email":useremail})
+    user_id= user_doc['_id']
+    print(type(user_id))
+    course_id =courseids[subject_name]
+    print(user_id)
+    # print(res)
 
     # Query MongoDB for the correct answers based on the subject name
     correct_answers_data = list(question_collection.find({"subname": subject_name}).limit(len(submitted_answers)))
     correct_answers = [question["answer"] for question in correct_answers_data]
-    print(correct_answers)
+    # print(correct_answers)
 
     # Evaluate the score
-    score = sum(1 for submitted, correct in zip(submitted_answers, correct_answers) if submitted == correct)
+    score = sum(33 for submitted, correct in zip(submitted_answers, correct_answers) if submitted == correct)
 
     print("Received answers:")
-    for index, answer in enumerate(submitted_answers):
-        print(f"Question {index + 1}: {answer}")
+    # for index, answer in enumerate(submitted_answers):
+    #     print(f"Question {index + 1}: {answer}")
 
     print(f"Score: {score} / {len(correct_answers)}")
+    subject_doc =courses_collection.find_one({"course": subject_name})
+    if subject_doc:
+        performance_data = {
+            "user_id":user_id,
+            "score": score,
+            "attempts":1,
+            "time_spent":1000,
+            # Add more details as needed
+        }
+        
+        courses_collection.update_one(
+            {"course": subject_name},
+            {"$push": {"performance": performance_data}}
+        )
+        
+        eval_params ={
+            'course_id': course_id,
+            'timespent': performance_data['time_spent'],
+            'quizscore': score,
+            'quizzattempts': 1,
+            "user_id":str(user_id),
+            "course_name":subject_name
+
+
+        }
+        response = requests.post(url, json=eval_params)
+
+        print(f"Performance data appended to subject document: {performance_data}")
+
+    
 
     return jsonify({"success": True, "score": score, "total_questions": len(correct_answers)})
 
@@ -165,8 +208,9 @@ def get_opted_courses():
             print(specific_performance)
             if(specific_performance):
                 recommendations = specific_performance['recommendations']
-                for each in recommendations:
-                    total_recommendations.append(each)
+                if(recommendations!=None):
+                    for each in recommendations:
+                        total_recommendations.append(each)
     # print(total_recommendations)
     top_courses_cursor = courses_collection.find().sort("opted_count", -1).limit(3)
     
@@ -207,4 +251,4 @@ def get_username_by_email(email):
         return None
 
 if __name__ == '__main__':
-    app.run()
+    app.run(port =5000)
