@@ -212,13 +212,15 @@ def get_opted_courses():
                     for each in recommendations:
                         total_recommendations.append(each)
     # print(total_recommendations)
+    if(len(total_recommendations)==0):
+        total_recommendations=["Basic ALgebra","Dbms"]
     top_courses_cursor = courses_collection.find().sort("opted_count", -1).limit(3)
     
     # Convert cursor object to a list of dictionaries
     top_courses = list(top_courses_cursor)
     
     top_course_names = [course['course'] for course in top_courses]
-    print(top_course_names)
+    print({'opted_courses': opted_courses,'total_recommendations': total_recommendations,'popular_courses':top_course_names})
 
     return jsonify({'opted_courses': opted_courses,'total_recommendations': total_recommendations,'popular_courses':top_course_names})
 
