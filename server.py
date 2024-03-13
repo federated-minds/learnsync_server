@@ -29,6 +29,7 @@ users_collection = db['users']
 question_collection=db['questions']
 courses_collection = db['courses']
 dataset_users_collection = db['Dataset_users']
+playlists_collection = db['playlists']
 
 try:
     client.admin.command('ping')
@@ -224,14 +225,16 @@ def get_opted_courses():
 
     return jsonify({'opted_courses': opted_courses,'total_recommendations': total_recommendations,'popular_courses':top_course_names})
 
-@app.route('/playlist_id', methods=['GET'])
+@app.route('/playlist_id', methods=['POST'])
 def get_playlist_id():
-    course_name = request.args.get('courseName')
-    course = courses_collection.find_one({'course': "physics"}) #change once playlist ids are added to mongo db
+    data = request.json
+    print(data)
+    course_name = data['courseName']
+    course = playlists_collection.find_one({'playlist_name': course_name}) #change once playlist ids are added to mongo db
     
     if course:
-        print(course['playlist_id'])
-        return jsonify({'playlist_id': course['playlist_id']})
+        print(course['playlist_url'])
+        return jsonify({'playlist_id': course['playlist_url'],'first_vedio_link':course['first_video_url']})
     else:
         return jsonify({'error': 'Course not found'}), 404
 
