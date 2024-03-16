@@ -52,6 +52,197 @@ def signup():
             }
             id =users_collection.insert_one(user)
             print(id)
+                    # Insert an empty document with the user's ID into another collection
+            other_document = {'user_id': id.inserted_id, 'datasets': [{'course_id': '1', 'time_spent': '55', 'quiz_scores': '19', 'quiz_attempts': '5', 'performance': '0'},
+            {'course_id': '1', 'time_spent': '8', 'quiz_scores': '6', 'quiz_attempts': '4', 'performance': '0'},
+    {'course_id': '10', 'time_spent': '51', 'quiz_scores': '100', 'quiz_attempts': '2', 'performance': '2'},
+    {'course_id': '2', 'time_spent': '6', 'quiz_scores': '54', 'quiz_attempts': '1', 'performance': '1'},
+    {'course_id': '2', 'time_spent': '51', 'quiz_scores': '63', 'quiz_attempts': '2', 'performance': '1'},
+    {
+        "course_id": "1",
+        "time_spent": "55",
+        "quiz_scores": "19",
+        "quiz_attempts": "5",
+        "performance": "0"
+        },
+        {
+        "course_id": "1",
+        "time_spent": "8",
+        "quiz_scores": "33",
+        "quiz_attempts": "4",
+        "performance": "0"
+        },
+        {
+        "course_id": "7",
+        "time_spent": "51",
+        "quiz_scores": "99",
+        "quiz_attempts": "2",
+        "performance": "2"
+        },
+        {
+        "course_id": "2",
+        "time_spent": "6",
+        "quiz_scores": "99",
+        "quiz_attempts": "1",
+        "performance": "2"
+        },
+        {
+        "course_id": "2",
+        "time_spent": "51",
+        "quiz_scores": "99",
+        "quiz_attempts": "1",
+        "performance": "2"
+        },
+        {
+        "course_id": "3",
+        "time_spent": "30",
+        "quiz_scores": "50",
+        "quiz_attempts": "3",
+        "performance": "1"
+        },
+        {
+        "course_id": "3",
+        "time_spent": "20",
+        "quiz_scores": "80",
+        "quiz_attempts": "2",
+        "performance": "2"
+        },
+        {
+        "course_id": "4",
+        "time_spent": "40",
+        "quiz_scores": "90",
+        "quiz_attempts": "4",
+        "performance": "2"
+        },
+        {
+        "course_id": "5",
+        "time_spent": "15",
+        "quiz_scores": "60",
+        "quiz_attempts": "1",
+        "performance": "1"
+        },
+        {
+        "course_id": "5",
+        "time_spent": "25",
+        "quiz_scores": "75",
+        "quiz_attempts": "2",
+        "performance": "2"
+        },
+        {
+        "course_id": "6",
+        "time_spent": "45",
+        "quiz_scores": "85",
+        "quiz_attempts": "3",
+        "performance": "2"
+        },
+        {
+        "course_id": "8",
+        "time_spent": "35",
+        "quiz_scores": "75",
+        "quiz_attempts": "3",
+        "performance": "2"
+        },
+        {
+        "course_id": "9",
+        "time_spent": "22",
+        "quiz_scores": "60",
+        "quiz_attempts": "2",
+        "performance": "1"
+        },
+        {
+        "course_id": "10",
+        "time_spent": "30",
+        "quiz_scores": "95",
+        "quiz_attempts": "4",
+        "performance": "2"
+        },
+        {
+        "course_id": "11",
+        "time_spent": "28",
+        "quiz_scores": "70",
+        "quiz_attempts": "3",
+        "performance": "2"
+        },
+        {
+        "course_id": "12",
+        "time_spent": "15",
+        "quiz_scores": "50",
+        "quiz_attempts": "2",
+        "performance": "1"
+        },
+        {
+        "course_id": "13",
+        "time_spent": "40",
+        "quiz_scores": "85",
+        "quiz_attempts": "4",
+        "performance": "2"
+        },
+        {
+        "course_id": "14",
+        "time_spent": "20",
+        "quiz_scores": "60",
+        "quiz_attempts": "2",
+        "performance": "1"
+        },
+        {
+        "course_id": "15",
+        "time_spent": "35",
+        "quiz_scores": "75",
+        "quiz_attempts": "3",
+        "performance": "2"
+        },
+        {
+        "course_id": "16",
+        "time_spent": "18",
+        "quiz_scores": "40",
+        "quiz_attempts": "2",
+        "performance": "1"
+        },
+        {
+        "course_id": "17",
+        "time_spent": "30",
+        "quiz_scores": "95",
+        "quiz_attempts": "4",
+        "performance": "2"
+        },
+        {
+        "course_id": "18",
+        "time_spent": "22",
+        "quiz_scores": "60",
+        "quiz_attempts": "2",
+        "performance": "1"
+        },
+        {
+        "course_id": "19",
+        "time_spent": "45",
+        "quiz_scores": "85",
+        "quiz_attempts": "3",
+        "performance": "2"
+        },
+        {
+        "course_id": "20",
+        "time_spent": "28",
+        "quiz_scores": "70",
+        "quiz_attempts": "3",
+        "performance": "2"
+        },
+        {
+        "course_id": "21",
+        "time_spent": "40",
+        "quiz_scores": "25",
+        "quiz_attempts": "3",
+        "performance": "0"
+        },
+        {
+        "course_id": "22",
+        "time_spent": "18",
+        "quiz_scores": "15",
+        "quiz_attempts": "2",
+        "performance": "0"
+        },
+        ]}
+            dataset_users_collection.insert_one(other_document)
+
             return jsonify({'success': True})
         else:
             return jsonify({'success': False, 'message': "No Details entered"})
