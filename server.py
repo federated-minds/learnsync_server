@@ -56,7 +56,7 @@ def signup():
             other_document = {'user_id': id.inserted_id, 'datasets': [{'course_id': '1', 'time_spent': '55', 'quiz_scores': '19', 'quiz_attempts': '5', 'performance': '0'},
             {'course_id': '1', 'time_spent': '8', 'quiz_scores': '6', 'quiz_attempts': '4', 'performance': '0'},
     {'course_id': '10', 'time_spent': '51', 'quiz_scores': '100', 'quiz_attempts': '2', 'performance': '2'},
-    {'course_id': '2', 'time_spent': '6', 'quiz_scores': '54', 'quiz_attempts': '1', 'performance': '1'},
+    {'course_id': '2', 'time_spent': '6','quiz_scores': '54', 'quiz_attempts': '1', 'performance': '1'},
     {'course_id': '2', 'time_spent': '51', 'quiz_scores': '63', 'quiz_attempts': '2', 'performance': '1'},
     {
         "course_id": "1",

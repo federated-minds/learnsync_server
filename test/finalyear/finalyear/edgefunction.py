@@ -9,9 +9,28 @@ import certifi
 from sklearn.preprocessing import StandardScaler
 import requests
 import json
+import utils 
+import tenseal as ts
+from bson.binary import Binary
+from gridfs import GridFS
+
+##  INitializor for encryptions
+context = ts.context(
+    ts.SCHEME_TYPE.CKKS,
+    poly_modulus_degree=8192,
+    coeff_mod_bit_sizes=[60, 40, 40, 60]
+)
+context.generate_galois_keys()
+context.global_scale = 2**40
+secret_context = context.serialize(save_secret_key=True)
+utils.write_data("K:/Final Year Project/code/learnsync_server/test/finalyear/finalyear/keys/secret.txt", secret_context)
+context.make_context_public()
+public_context = context.serialize()
+utils.write_data("K:/Final Year Project/code/learnsync_server/test/finalyear/finalyear/keys/public.txt", public_context)
+
 ca = certifi.where()
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'
+# app.secret_key = 'your_secret_key'
 
 # Load the pickled model
 #with open(r'learnsync_server\test\Final year project\Final year project\random_forest_model.pkl', 'rb') as file:
@@ -44,6 +63,17 @@ def index():
     return "hello"
 
 
+def encrypt(prediction,uid):
+    vec =[prediction]
+    context = ts.context_from(utils.read_data("K:/Final Year Project/code/learnsync_server/test/finalyear/finalyear/keys/public.txt"))
+    encry_pred = ts.ckks_vector(context, vec)
+    utils.write_data("K:/Final Year Project/code/learnsync_server/comms/encrypted_prediction.txt", encry_pred.serialize()) 
+    fs = GridFS(db)
+    with open("K:/Final Year Project/code/learnsync_server/comms/encrypted_prediction.txt", 'rb') as file:
+        file_id = fs.put(file, filename=f'encrypted_prediction_{uid}.txt')
+    print("file uploaded",file_id)
+
+    
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -100,10 +130,13 @@ def predict():
         else:
             prediction=2
         print(prediction)
+        encrypt(prediction,user_id_to_update)
+        
         # print(courses_collection.find_one({'course': course, 'performance.user_id': user_id_to_update}))
         courses_collection.update_many(
             {'course': course, 'performance.user_id': user_id_to_update},
-            {'$set': {'performance.$[].performance': prediction}}
+            {'$set': {'performance.$[].performance': prediction}},
+                        
         )
         url = 'http://localhost:3001/aggregate_performance'
         response = requests.post(url, json=input_data)
